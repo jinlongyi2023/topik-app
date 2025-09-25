@@ -13,10 +13,10 @@ supabase = create_client(url, key)
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # -------------------------
-# 2. 初始化状态
+# 2. 初始化 session 状态
 # -------------------------
 if "user" not in st.session_state:
-    st.session_state["user"] = None   # 当前登录用户
+    st.session_state["user"] = None  # 当前登录用户
 
 
 # -------------------------
@@ -62,44 +62,50 @@ def auth_form():
             except Exception as e:
                 st.error(f"登录失败: {e}")
 
-# -------------------------
-# 4. 批改作文模块
-# -------------------------
-if st.button("批改我的作文"):
-    if essay.strip() == "":
-        st.warning("请输入作文后再提交！")
-    else:
-        with st.spinner("正在批改中，请稍候..."):
-            # 调用 OpenAI API
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "你是一位专业的TOPIK韩语写作老师。"
-                            "请根据以下要求批改学生的作文：\n\n"
-                            "1. 输出语言：点评部分必须用中文；句子修改示例必须用韩语。\n"
-                            "2. 批改内容结构：\n"
-                            "   - 【总体评价】：给出整体印象（主题是否清晰，逻辑是否连贯）。\n"
-                            "   - 【主要错误】：指出作文中的主要错误（语法、用词、表达问题）。\n"
-                            "   - 【修改示例】：列出原句（韩语）和修改后的句子（韩语），保持1对1对照。\n"
-                            "   - 【改进建议】：给出提升建议（比如词汇多样性、句式复杂度）。\n"
-                            "3. 给出分数：按照 TOPIK 写作评分标准，从以下3个维度分别打分（满分30）：\n"
-                            "   - 内容 (Content)\n"
-                            "   - 结构 (Structure)\n"
-                            "   - 表达 (Expression)\n"
-                            "   最后给出总分 (满分90)。\n\n"
-                            "请严格按照上述格式输出，方便学生理解和改进。"
-                        )
-                    },
-                    {"role": "user", "content": essay}
-                ],
-                temperature=0.7
-            )
 
-            feedback = response.choices[0].message.content
+# -------------------------
+# 4. 作文批改模块
+# -------------------------
+def essay_grading():
+    st.title("TOPIK 写作批改 Demo ✍️")
 
-        # 显示结果
-        st.subheader("批改结果（中文点评 + 韩文修改）：")
-        st.write(feedback)
+    essay = st.text_area("请输入你的TOPIK作文：", height=300)
+
+    if st.button("批改我的作文"):
+        if essay.strip() == "":
+            st.warning("请输入作文后再提交！")
+        else:
+            with st.spinner("正在批改中，请稍候..."):
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "你是一位专业的TOPIK韩语写作老师。\n"
+                                "请用中文点评作文（总体评价、主要错误、改进建议），"
+                                "但学生作文中的修改示例必须用韩文。\n\n"
+                                "批改内容包括：\n"
+                                "- 总体评价\n"
+                                "- 主要语法错误 + 改进建议\n"
+                                "- 句子修改示例（韩文）\n"
+                                "- 给出三个分项评分（内容、结构、表达）和总分（满分90）\n"
+                            )
+                        },
+                        {"role": "user", "content": essay}
+                    ],
+                    temperature=0.7
+                )
+                feedback = response.choices[0].message.content
+
+            st.subheader("批改结果（中文点评 + 韩文修改）：")
+            st.write(feedback)
+
+
+# -------------------------
+# 主逻辑：未登录 -> 登录界面；已登录 -> 批改界面
+# -------------------------
+if st.session_state["user"] is None:
+    auth_form()
+else:
+    essay_grading()
