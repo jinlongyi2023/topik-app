@@ -69,10 +69,12 @@ def auth_form():
 def essay_grading():
     st.title("TOPIK 写作批改 Demo ✍️")
 
+# 作文输入框
     essay = st.text_area("请输入你的TOPIK作文：", height=300)
 
-if st.button("批改我的作文"):
-    if essay.strip() == "":
+# 批改按钮
+    if st.button("批改我的作文"):
+        if essay.strip() == "":
         st.warning("请输入作文后再提交！")
     else:
         with st.spinner("正在批改中，请稍候..."):
