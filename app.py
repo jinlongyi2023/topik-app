@@ -75,7 +75,7 @@ def essay_grading():
 # 批改按钮
     if st.button("批改我的作文"):
         if essay.strip() == "":
-        st.warning("请输入作文后再提交！")
+            st.warning("请输入作文后再提交！")
     else:
         with st.spinner("正在批改中，请稍候..."):
             response = client.chat.completions.create(
