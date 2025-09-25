@@ -10,6 +10,22 @@ supabase = create_client(url, key)
 email = st.text_input("邮箱")
 password = st.text_input("密码", type="password")
 
+if st.button("注册"):
+    try:
+        res = supabase.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+        # 注册后直接登录
+        login_res = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+        st.success("注册并已自动登录成功！")
+        st.json(login_res)
+    except Exception as e:
+        st.error(f"注册失败: {e}")
+
 # 注册
 if st.button("注册"):
     try:
