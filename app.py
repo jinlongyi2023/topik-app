@@ -6,17 +6,29 @@ url = "https://ruajtxpodbcvjkxzrgpy.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1YWp0eHBvZGJjdmpreHpyZ3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDczNjksImV4cCI6MjA3NDM4MzM2OX0.5uuzSP2mENwTXKAGW_IGGj7hnID0YJ7W289Oyw5eOyY"
 supabase = create_client(url, key)
 
-# 注册示例
+# 注册
 if st.button("注册"):
-    res = supabase.auth.sign_up({"email": email, "password": password})
-    st.write("注册结果:", res)
+    try:
+        res = supabase.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+        st.success("注册成功！")
+        st.json(res)   # 打印结果看看
+    except Exception as e:
+        st.error(f"注册失败: {e}")
 
-# 登录示例
-email = st.text_input("邮箱")
-password = st.text_input("密码", type="password")
+# 登录
 if st.button("登录"):
-    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-    st.write(res)
+    try:
+        res = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+        st.success("登录成功！")
+        st.json(res)   # 打印结果看看
+    except Exception as e:
+        st.error(f"登录失败: {e}")
 
 # 使用 Streamlit Secrets 里的 API Key
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
