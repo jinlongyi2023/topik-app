@@ -5,9 +5,12 @@ from supabase import create_client
 # -------------------------
 # 1. 连接 Supabase
 # -------------------------
-url = st.secrets["https://ruajtxpodbcvjkxzrgpy.supabase.co"]   # 放在 Streamlit Secrets 里
-key = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1YWp0eHBvZGJjdmpreHpyZ3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDczNjksImV4cCI6MjA3NDM4MzM2OX0.5uuzSP2mENwTXKAGW_IGGj7hnID0YJ7W289Oyw5eOyY"]   # anon public key
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_KEY"]
 supabase = create_client(url, key)
+
+# 初始化 OpenAI
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # -------------------------
 # 2. 初始化状态
@@ -25,31 +28,39 @@ def auth_form():
     email = st.text_input("邮箱")
     password = st.text_input("密码", type="password")
 
-    # 注册（注册成功后自动登录）
-    if st.button("注册"):
-        try:
-            supabase.auth.sign_up({"email": email, "password": password})
-            login_res = supabase.auth.sign_in_with_password(
-                {"email": email, "password": password}
-            )
-            if login_res.user:
-                st.session_state["user"] = login_res.user
-                st.success("注册并已自动登录成功！")
-        except Exception as e:
-            st.error(f"注册失败: {e}")
+    col1, col2 = st.columns(2)
+
+    # 注册
+    with col1:
+        if st.button("注册"):
+            try:
+                res = supabase.auth.sign_up({"email": email, "password": password})
+                if res.user:
+                    # 注册成功后自动登录
+                    login_res = supabase.auth.sign_in_with_password(
+                        {"email": email, "password": password}
+                    )
+                    st.session_state["user"] = login_res.user
+                    st.success("注册并已自动登录成功！")
+                else:
+                    st.warning("注册失败，请检查邮箱是否已存在。")
+            except Exception as e:
+                st.error(f"注册失败: {e}")
 
     # 登录
-    if st.button("登录"):
-        try:
-            res = supabase.auth.sign_in_with_password(
-                {"email": email, "password": password}
-            )
-            if res.user:
-                st.session_state["user"] = res.user
-                st.success("登录成功！")
-        except Exception as e:
-            st.error(f"登录失败: {e}")
-
+    with col2:
+        if st.button("登录"):
+            try:
+                res = supabase.auth.sign_in_with_password(
+                    {"email": email, "password": password}
+                )
+                if res.user:
+                    st.session_state["user"] = res.user
+                    st.success("登录成功！")
+                else:
+                    st.error("登录失败，请检查邮箱和密码。")
+            except Exception as e:
+                st.error(f"登录失败: {e}")
 
 # -------------------------
 # 4. 批改作文模块
