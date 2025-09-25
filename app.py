@@ -22,10 +22,17 @@ if st.button("批改我的作文"):
                         "role": "system",
                         "content": (
                             "你是一位专业的TOPIK韩语写作老师。"
-                            "请用 **中文** 给学生写详细点评（比如：总体评价、主要错误、写作建议），"
-                            "但所有修改示例和改正后的句子要用 **韩文**。"
+                            "请用中文输出点评内容（例如：总体评价、主要错误、改进建议），"
+                            "但学生作文中的修改示例和改正后的句子要用韩文。"
                         )
                     },
                     {"role": "user", "content": essay}
                 ],
-                temperature=0.7,
+                temperature=0.7
+            )
+
+            feedback = response.choices[0].message.content
+
+        # 显示结果
+        st.subheader("批改结果（中文点评 + 韩文修改）：")
+        st.write(feedback)
