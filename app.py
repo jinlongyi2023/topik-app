@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+from supabase import create_client
 
 # 使用 Streamlit Secrets 里的 API Key
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
