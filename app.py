@@ -1,6 +1,18 @@
 import streamlit as st
 from openai import OpenAI
 from supabase import create_client
+import streamlit as st
+
+url = "你的supabase_url"
+key = "你的supabase_key"
+supabase = create_client(url, key)
+
+# 登录示例
+email = st.text_input("邮箱")
+password = st.text_input("密码", type="password")
+if st.button("登录"):
+    res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    st.write(res)
 
 # 使用 Streamlit Secrets 里的 API Key
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
