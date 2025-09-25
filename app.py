@@ -6,6 +6,10 @@ url = "https://ruajtxpodbcvjkxzrgpy.supabase.co"
 key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1YWp0eHBvZGJjdmpreHpyZ3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDczNjksImV4cCI6MjA3NDM4MzM2OX0.5uuzSP2mENwTXKAGW_IGGj7hnID0YJ7W289Oyw5eOyY"
 supabase = create_client(url, key)
 
+# 用户输入邮箱和密码
+email = st.text_input("邮箱")
+password = st.text_input("密码", type="password")
+
 # 注册
 if st.button("注册"):
     try:
