@@ -1,11 +1,15 @@
 import streamlit as st
 from openai import OpenAI
 from supabase import create_client
-import streamlit as st
 
-url = "你的supabase_url"
-key = "你的supabase_key"
+url = "https://ruajtxpodbcvjkxzrgpy.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1YWp0eHBvZGJjdmpreHpyZ3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MDczNjksImV4cCI6MjA3NDM4MzM2OX0.5uuzSP2mENwTXKAGW_IGGj7hnID0YJ7W289Oyw5eOyY"
 supabase = create_client(url, key)
+
+# 注册示例
+if st.button("注册"):
+    res = supabase.auth.sign_up({"email": email, "password": password})
+    st.write("注册结果:", res)
 
 # 登录示例
 email = st.text_input("邮箱")
