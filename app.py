@@ -10,7 +10,7 @@ key = os.environ["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
 # 初始化 OpenAI
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # -------------------------
 # 2. 初始化 session 状态
