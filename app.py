@@ -1,12 +1,12 @@
-import streamlit as st
+import os
 from openai import OpenAI
 from supabase import create_client
 
 # -------------------------
 # 1. 连接 Supabase
 # -------------------------
-url = st.secrets["SUPABASE_URL"]
-key = st.secrets["SUPABASE_KEY"]
+url = os.environ["SUPABASE_URL"]
+key = os.environ["SUPABASE_KEY"]
 supabase = create_client(url, key)
 
 # 初始化 OpenAI
