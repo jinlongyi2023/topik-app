@@ -57,7 +57,7 @@ def auth_form():
                 )
                 if res.user:
                     st.session_state["user"] = res.user
-                    st.success("登录成功！")
+                    st.rerun()  # 不提示“登录成功”，而是直接刷新进入作文批改界面
                 else:
                     st.error("登录失败，请检查邮箱和密码。")
             except Exception as e:
