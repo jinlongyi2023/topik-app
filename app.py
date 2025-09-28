@@ -112,4 +112,4 @@ def essay_grading(essay):
 if st.session_state["user"] is None:
     auth_form()
 else:
-    essay_grading()
+    essay_grading(essay_text)
