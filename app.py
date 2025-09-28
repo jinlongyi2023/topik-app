@@ -104,7 +104,7 @@ if st.session_state["user"]:
             feedback = essay_grading(essay_text)
 
             st.subheader("批改结果")
-            st.write(feedback)
+            st.markdown(feedback, unsafe_allow_html=True)
 
             # 存储到 Supabase
             supabase.table("compositions").insert({
