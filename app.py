@@ -15,73 +15,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 # -------------------
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-# -------------------------
-# 3. 注册 + 登录模块
-# -------------------------
-def auth_form():
-    st.subheader("请先登录 / 注册")
-
-    email = st.text_input("邮箱")
-    password = st.text_input("密码", type="password")
-
-    col1, col2 = st.columns(2)
-
-    # 注册
-    with col1:
-        if st.button("注册"):
-            try:
-                res = supabase.auth.sign_up({"email": email, "password": password})
-                if res.user:
-                    # 注册成功后自动登录
-                    login_res = supabase.auth.sign_in_with_password(
-                        {"email": email, "password": password}
-                    )
-                    st.session_state["user"] = login_res.user
-                    st.success("注册并已自动登录成功！")
-                else:
-                    st.warning("注册失败，请检查邮箱是否已存在。")
-            except Exception as e:
-                st.error(f"注册失败: {e}")
-
-    # 登录
-    with col2:
-        if st.button("登录"):
-            try:
-                res = supabase.auth.sign_in_with_password(
-                    {"email": email, "password": password}
-                )
-                if res.user:
-                    st.session_state["user"] = res.user
-                    st.rerun()  # 不提示“登录成功”，而是直接刷新进入作文批改界面
-                else:
-                    st.error("登录失败，请检查邮箱和密码。")
-            except Exception as e:
-                st.error(f"登录失败: {e}")
-
-# -------------------
-# 4. Streamlit 界面
-# -------------------
-st.title("TOPIK 大作文批改系统 ✍️")
-
-essay_text = st.text_area("请输入你的作文：", height=300)
-
-if st.button("批改作文"):
-    if essay_text.strip():
-        st.info("正在批改，请稍候...")
-        feedback = essay_grading(essay_text)
-
-        st.subheader("批改结果")
-        st.write(feedback)
-
-        # 存储到 Supabase
-        supabase.table("compositions").insert({
-            "content": essay_text,
-            "feedback": feedback
-        }).execute()
-
-    else:
-        st.warning("请输入作文后再点击批改按钮！")
-
 # -------------------
 # 3. 批改函数
 # -------------------
@@ -116,7 +49,81 @@ def essay_grading(essay: str):
         ],
         temperature=0.7
     )
+    return response.choices[0].message.content
 
-    feedback = response.choices[0].message.content
-    return feedback
-    
+
+# -------------------
+# 4. 注册 / 登录系统
+# -------------------
+if "user" not in st.session_state:
+    st.session_state["user"] = None
+
+st.sidebar.title("用户中心")
+
+if st.session_state["user"] is None:
+    option = st.sidebar.radio("请选择操作：", ["登录", "注册"])
+
+    if option == "登录":
+        email = st.sidebar.text_input("邮箱")
+        password = st.sidebar.text_input("密码", type="password")
+        if st.sidebar.button("登录"):
+            res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if res.user:
+                st.session_state["user"] = res.user
+                st.success("登录成功！")
+            else:
+                st.error("登录失败，请检查邮箱和密码。")
+
+    elif option == "注册":
+        email = st.sidebar.text_input("邮箱")
+        password = st.sidebar.text_input("密码", type="password")
+        if st.sidebar.button("注册"):
+            res = supabase.auth.sign_up({"email": email, "password": password})
+            if res.user:
+                st.success("注册成功，请登录。")
+            else:
+                st.error("注册失败。")
+
+else:
+    st.sidebar.write(f"欢迎回来, {st.session_state['user'].email}")
+    if st.sidebar.button("退出登录"):
+        st.session_state["user"] = None
+
+
+# -------------------
+# 5. 主页面：作文批改
+# -------------------
+if st.session_state["user"]:
+    st.title("TOPIK 大作文批改系统 ✍️")
+
+    essay_text = st.text_area("请输入你的作文：", height=300)
+
+    if st.button("批改作文"):
+        if essay_text.strip():
+            st.info("正在批改，请稍候...")
+            feedback = essay_grading(essay_text)
+
+            st.subheader("批改结果")
+            st.write(feedback)
+
+            # 存储到 Supabase
+            supabase.table("compositions").insert({
+                "user_id": st.session_state["user"].id,
+                "content": essay_text,
+                "feedback": feedback
+            }).execute()
+
+        else:
+            st.warning("请输入作文后再点击批改按钮！")
+
+    # -------------------
+    # 6. 历史记录
+    # -------------------
+    st.subheader("历史批改记录")
+    records = supabase.table("compositions").select("*").eq("user_id", st.session_state["user"].id).order("created_at", desc=True).execute()
+    for r in records.data:
+        with st.expander(f"作文 ID: {r['id']} | 批改时间: {r['created_at']}"):
+            st.write("原文：")
+            st.write(r["content"])
+            st.write("批改结果：")
+            st.write(r["feedback"])
